@@ -21,17 +21,17 @@ from sklearn.preprocessing import StandardScaler
 pyo.init_notebook_mode(connected=True)
 cf.go_offline()
 
-@st.cache
+@st.cache_data
 def get_mydata():
     data=pd.read_csv("heart.csv")
     return data
 
-@st.cache
+@st.cache_data
 def get_x(heart_data):
     r,s=heart_data.loc[:,:'thal'],heart_data['target']
     return r
 
-@st.cache
+@st.cache_data
 def get_y(heart_data):
     r,s=heart_data.loc[:,:'thal'],heart_data['target']
     return s
@@ -92,24 +92,54 @@ def vist(heart_data):
     c = alt.Chart(vt).mark_circle().encode(x='target', y='sex', size='oldpeak', color='oldpeak', tooltip=['target', 'sex', 'oldpeak'])
     st.write(c)
 
-    st.write("This countplot chart below shows us two attributes Target and sex.It shows us how many patients of a paricular gender are having heart disease or not in our dataset")
-    plt.figure(figsize=(10,7))
-    sn.countplot('sex',hue='target',data = heart_data)
-    st.pyplot()
-    st.write('#')
+    # st.write("This countplot chart below shows us two attributes Target and sex.It shows us how many patients of a paricular gender are having heart disease or not in our dataset")
+    # plt.figure(figsize=(10,7))
+    # sn.countplot('sex',hue='target',data = heart_data)
+    # st.pyplot()
+    # st.write()
+    
+    count_data = heart_data.groupby(['sex', 'target']).size().reset_index(name='count')
 
-    st.write("This countplot chart below shows us two attributes Target and Fasting Blood Sugar.")
-    plt.figure(figsize=(10,7))
-    sn.countplot('fbs',hue='target',data=heart_data)
-    st.pyplot()
-    st.write('#')
+    # Create the Altair chart object
+    count_chart = alt.Chart(count_data).mark_bar().encode(
+        x='sex:N',  # Specify that 'sex' is a nominal categorical data (not ordinal)
+        y='count:Q',  # The count is a quantitative measure
+        color='target:N',  # Color by 'target', also nominal
+        tooltip=['sex:N', 'target:N', 'count:Q']  # Show all these fields in the tooltip
+    )
 
-    st.write("This barplot chart below shows us two attributes Target and trestbps.")
-    plt.figure(figsize=(26,15))
-    y = heart_data.target
-    sn.barplot(heart_data['trestbps'],y)
-    st.pyplot()
-    st.write('#')
+    # Then write the chart to the Streamlit app
+    st.write("This countplot chart below shows us two attributes Target and sex. It shows us how many patients of a particular gender are having heart disease or not in our dataset")
+    st.altair_chart(count_chart, use_container_width=True)
+
+
+    # st.write("This countplot chart below shows us two attributes Target and Fasting Blood Sugar.")
+    # plt.figure(figsize=(10,7))
+    # sn.countplot('fbs',hue='target',data=heart_data)
+    # st.pyplot()
+    #st.write('#')
+    
+    
+    count_data = heart_data.groupby(['fbs', 'target']).size().reset_index(name='count')
+
+    # Create the Altair chart object
+    count_chart = alt.Chart(count_data).mark_bar().encode(
+        x='fbs:N',  # Specify that 'fbs' is a nominal categorical data (not ordinal)
+        y='count:Q',  # The count is a quantitative measure
+        color='target:N',  # Color by 'target', also nominal
+        tooltip=['fbs:N', 'target:N', 'count:Q']  # Show all these fields in the tooltip
+    )
+
+    # Then write the chart to the Streamlit app
+    st.write("This countplot chart below shows us two attributes Target and Fasting Blood Sugar. It shows us how many patients with a particular fasting blood sugar level are having heart disease or not in our dataset")
+    st.altair_chart(count_chart, use_container_width=True)
+
+    # st.write("This barplot chart below shows us two attributes Target and trestbps.")
+    # plt.figure(figsize=(26,15))
+    # y = heart_data.target
+    # sn.barplot(heart_data['trestbps'],y)
+    # st.pyplot()
+    # st.write('#')
 
     st.write("This scatterplot  below shows us two attributes Target and trestbps.")
     plt.figure(figsize=(10,7))
